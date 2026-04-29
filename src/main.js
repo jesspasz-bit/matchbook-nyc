@@ -43,7 +43,15 @@ function avatar(handle, sm) {
   const cls = sm ? 'avatar avatar-sm' : 'avatar';
   return `<div class="${cls}" style="background:${avatarColor(handle)};">${initial}</div>`;
 }
-
+window.deleteFind = async function(findId) {
+  if (!confirm('Delete this find?')) return;
+  await supabase.from('likes').delete().eq('find_id', findId);
+  await supabase.from('comments').delete().eq('find_id', findId);
+  await supabase.from('finds').delete().eq('id', findId);
+  await supabase.from('profiles').update({ points: Math.max(0, (currentProfile.points || 0) - 10) }).eq('id', currentUser.id);
+  currentProfile.points = Math.max(0, (currentProfile.points || 0) - 10);
+  renderTab();
+};
 async function init() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { renderLogin(); return; }
@@ -191,8 +199,9 @@ async function renderFeed() {
       </div>
       ${f.photo_url ? `<img src="${f.photo_url}" class="feed-photo" alt="" />` : ''}
       ${f.caption ? `<div style="font-size:14px;margin-bottom:6px;">${escape(f.caption)}</div>` : ''}
-      <div style="display:flex;gap:4px;">
+      <div style="display:flex;gap:4px;align-items:center;">
         <button class="like-btn ${myLike ? 'liked' : ''}" onclick="window.toggleLike('${f.id}')">${myLike ? '♥' : '♡'} ${likeCount || ''}</button>
+        ${f.user_id === currentUser.id ? `<button class="btn-ghost" style="margin-left:auto;font-size:12px;padding:4px 10px;color:var(--danger);border-color:var(--danger);" onclick="window.deleteFind('${f.id}')">Delete</button>` : ''}
       </div>
       ${commentsHtml ? `<div style="margin-top:6px;">${commentsHtml}</div>` : ''}
       <input type="text" class="comment-input" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')window.addComment('${f.id}', this)" />
@@ -245,8 +254,9 @@ async function renderYou() {
     </div>
     <div>${(myFinds || []).map(f => `
       <div class="row">
-        <div style="flex:1;"><strong>${escape(f.spots?.name || 'Unknown')}</strong><div class="muted">${timeAgo(f.created_at)}</div></div>
-      </div>`).join('') || '<div style="padding:40px;text-align:center;" class="muted">No finds yet. Hit + to log your first.</div>'}</div>`;
+         |<div style="flex:1;"><strong>${escape(f.spots?.name || 'Unknown')}</strong><div class="muted">${timeAgo(f.created_at)}</div></div>
+        <button class="btn-ghost" style="font-size:12px;padding:4px 10px;color:var(--danger);border-color:var(--danger);" onclick="window.deleteFind('${f.id}')">Delete</button>
+      </div>`).join('')| '<div style="padding:40px;text-align:center;" class="muted">No finds yet. Hit + to log your first.</div>'}</div>`;
 }
 
 function openAddModal() {
