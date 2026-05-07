@@ -246,17 +246,18 @@ window.toggleFollow = async function(otherId, isFollowing) {
 
 async function renderYou() {
   const { data: myFinds } = await supabase.from('finds').select('*, spots(name)').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+  const list = (myFinds || []).map(f => `
+    <div class="row">
+      <div style="flex:1;"><strong>${escape(f.spots?.name || 'Unknown')}</strong><div class="muted">${timeAgo(f.created_at)}</div></div>
+      <button class="btn-ghost" style="font-size:12px;padding:4px 10px;color:var(--danger);border-color:var(--danger);" onclick="window.deleteFind('${f.id}')">Delete</button>
+    </div>`).join('');
   document.getElementById('content').innerHTML = `
     <div style="padding:24px 16px;text-align:center;border-bottom:1px solid var(--border);">
       ${avatar(currentProfile.handle).replace('avatar"', 'avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto 12px;"')}
       <h2 style="margin:0;">@${escape(currentProfile.handle)}</h2>
       <p class="muted">${currentProfile.points || 0} points · ${(myFinds || []).length} finds</p>
     </div>
-    <div>${(myFinds || []).map(f => `
-      <div class="row">
-         |<div style="flex:1;"><strong>${escape(f.spots?.name || 'Unknown')}</strong><div class="muted">${timeAgo(f.created_at)}</div></div>
-        <button class="btn-ghost" style="font-size:12px;padding:4px 10px;color:var(--danger);border-color:var(--danger);" onclick="window.deleteFind('${f.id}')">Delete</button>
-      </div>`).join('')| '<div style="padding:40px;text-align:center;" class="muted">No finds yet. Hit + to log your first.</div>'}</div>`;
+    <div>${list || '<div style="padding:40px;text-align:center;" class="muted">No finds yet. Hit + to log your first.</div>'}</div>`;
 }
 
 function openAddModal() {
