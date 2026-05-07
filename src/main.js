@@ -275,7 +275,7 @@ function openAddModal() {
         <div id="photo-placeholder">📸 Tap to take or upload a photo<div class="muted" style="font-size:12px;margin-top:4px;">Required</div></div>
         <img id="photo-preview" class="photo-preview" style="display:none;" alt="" />
       </div>
-      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none;" />
+      <input type="file" id="photo-input" accept="image/*" style="display:none;" />
       <input type="text" id="spot-name" placeholder="Place name (e.g. Bemelmans Bar)" autocomplete="off" />
       <input type="hidden" id="spot-address" />
       <input type="hidden" id="spot-lat" />
